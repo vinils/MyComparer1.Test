@@ -1,2 +1,2 @@
-# MyComparer1.Test
-MyComparer Test (C#)
+# MyComparer.Test (C#)
+MyComparer Tests
