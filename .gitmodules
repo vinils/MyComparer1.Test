@@ -13,3 +13,6 @@
 [submodule "MyList1"]
 	path = MyList1
 	url = https://github.com/vinils/MyList1.git
+[submodule "MyList1.Test"]
+	path = MyList1.Test
+	url = https://github.com/vinils/MyList1.Test.git
