@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(SolutionDir)\MyComparer1.Hashers.MD5s\MyComparer.Hashers.MD5s\MyComparer.Hashers.MD5s.csproj" />
+    <ProjectReference Include="$(SolutionDir)\MyComparer1.Hashers\MyComparer.Hashers\MyComparer.Hashers.csproj" />
+    <ProjectReference Include="$(SolutionDir)\MyComparer1\MyComparer\MyComparer.csproj" />
+    <ProjectReference Include="$(SolutionDir)\MyList1.DAL\MyList.DAL\MyList.DAL.csproj" />
+    <ProjectReference Include="$(SolutionDir)\MyList1\MyList\MyList.csproj" />
+  </ItemGroup>
+
+</Project>

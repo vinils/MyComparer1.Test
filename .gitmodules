@@ -1,0 +1,15 @@
+[submodule "MyComparer1.Hashers.MD5s"]
+	path = MyComparer1.Hashers.MD5s
+	url = https://github.com/vinils/MyComparer1.Hashers.MD5s.git
+[submodule "MyComparer1.Hashers"]
+	path = MyComparer1.Hashers
+	url = https://github.com/vinils/MyComparer1.Hashers.git
+[submodule "MyComparer1"]
+	path = MyComparer1
+	url = https://github.com/vinils/MyComparer1.git
+[submodule "MyList1.DAL"]
+	path = MyList1.DAL
+	url = https://github.com/vinils/MyList1.DAL.git
+[submodule "MyList1"]
+	path = MyList1
+	url = https://github.com/vinils/MyList1.git
