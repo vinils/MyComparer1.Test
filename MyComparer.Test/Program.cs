@@ -79,10 +79,8 @@
             }
         }
 
-        public static bool Reload()
+        public static bool Reload(Guid guid)
         {
-            var guid = new Guid("A1FC727B-BC81-489F-B784-C4C917DC57B0");
-
             using (var sql = new Hashers.DAL.Clouds.FileHash(guid))
             {
                 var memory = new List<Hashers.DAL.Entities.FileHash>(sql);
@@ -544,15 +542,84 @@
             }
         }
 
-        public static void AllEmptyFolders()
+        public static void AllCloudFolder5(Guid guid)
         {
             try
             {
-                var sftwPaths = new string[] {
-                    "U:\\#newC\\"
-                };
+                using (var myEqualityComparer = new Hashers.MD5s.Cloud(guid))
+                {
+                    var filesHashes = myEqualityComparer
+                        .FileHashes
+                        .ToMemory()
+                        .GroupBy(fh => fh.Hash)
+                        .Where(fg => fg.Count() > 1)
+                        .ToList();
 
-                foreach (var basedir in sftwPaths)
+                    foreach (var fileGrouped in filesHashes)
+                    {
+                        if (!(fileGrouped.Any(fh => fh.File.GetFullPathAndName().ToLower().StartsWith(@"z:\usb\"))
+                            && fileGrouped.Any(fh => fh.File.GetFullPathAndName().ToLower().StartsWith(@"z:\dados\"))))
+                            continue;
+
+                        //if (!fileGrouped.Where(fh => !fh.File.Path.ToLower().Contains(@"z:\usb\") && fh.File.Path.ToLower().Contains(@"z:\usb\")).Any())
+                        //    continue;
+
+                        var filesToBeDeleted = fileGrouped
+                            .Where(fh => fh.File.GetFullPathAndName().ToLower().Contains(@"z:\usb\"));
+
+                        foreach (var fileHash in filesToBeDeleted)
+                        {
+                            var fileGroupedWithoutThis = fileGrouped.Where(f => f.File != fileHash.File);
+
+                            if (!fileGroupedWithoutThis
+                                .Where(f => f.File.Name == fileHash.File.Name
+                                && f.File.Directory.Name == fileHash.File.Directory.Name).Any())
+                                continue;
+
+                            var fullName = fileHash.File.GetFullPathAndName();
+
+                            if (!System.IO.File.Exists(fullName))
+                                continue;
+
+                            try
+                            {
+                                System.IO.File.SetAttributes(fullName, ~System.IO.FileAttributes.ReadOnly);
+                                System.IO.File.Delete(fullName);
+                                System.Diagnostics.Debug.WriteLine("del...ing " + fullName);
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine("############################");
+                                System.Diagnostics.Debug.WriteLine(fullName);
+                                System.Diagnostics.Debug.WriteLine(ex.Message);
+                                System.Diagnostics.Debug.WriteLine("############################");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (1 == 2)
+                    throw ex;
+            }
+        }
+
+        public static void AllEmptyFolders(string strRootFolder)
+        {
+            AllEmptyFolders(new string[] { strRootFolder });
+        }
+
+        public static void AllEmptyFolders(string[] strFolders)
+        {
+            if (strFolders is null || !strFolders.Any())
+            {
+                return;
+            }
+
+            try
+            {
+                foreach (var basedir in strFolders)
                 {
                     if (!System.IO.Directory.Exists(basedir))
                         continue;
@@ -773,7 +840,85 @@
             //AllEmptyFolders();
             //FixFileNames();
 
+#if DEBUG
+            Environment.SetEnvironmentVariable("PATH", "Z:\\");
+            Environment.SetEnvironmentVariable("STR_SQL_CONN", @"Persist Security Info=False;User ID=sa;Password=Senh@123;Initial Catalog=MyCompare1;Data Source=w19docker6,1467;MultipleActiveResultSets=True");
+#endif
 
+            //MyTest1();
+            AllCloudFolder5(GUID.Value);
+            AllEmptyFolders("Z:\\usb\\");
+        }
+
+        public static Guid? GUID
+        {
+            get
+            {
+                var envGuid = Environment.GetEnvironmentVariable("GUID");
+                var envGuidFilePath = AppDomain.CurrentDomain.BaseDirectory + "guid.txt";
+                string fileGuid = null;
+                if (System.IO.File.Exists(envGuidFilePath))
+                {
+                    fileGuid = System.IO.File.ReadAllText(envGuidFilePath, System.Text.Encoding.UTF8); ;
+                }
+
+                if (!string.IsNullOrEmpty(envGuid))
+                {
+                    if (envGuid != fileGuid)
+                        System.IO.File.WriteAllText(envGuidFilePath, envGuid);
+
+                    return new Guid(envGuid);
+                }
+                else if(!string.IsNullOrEmpty(fileGuid))
+                {
+                    if (envGuid != fileGuid)
+                        Environment.SetEnvironmentVariable("GUID", fileGuid);
+
+                    return new Guid(fileGuid);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                var envGuidFilePath = AppDomain.CurrentDomain.BaseDirectory + "guid.txt";
+
+                if (value.HasValue)
+                {
+                    Environment.SetEnvironmentVariable("GUID", value.Value.ToString());
+                    System.IO.File.WriteAllText(envGuidFilePath, value.Value.ToString());
+                }
+                else
+                {
+                    Environment.SetEnvironmentVariable("GUID", null);
+                    System.IO.File.Delete(envGuidFilePath);
+                }
+            }
+        }
+
+        public static void MyTest1()
+        {
+            if (!GUID.HasValue)
+            {
+                var path = Environment.GetEnvironmentVariable("PATH");
+
+                var directoryInfo = new System.IO.DirectoryInfo(path);
+                global::MyList.DAL.Entities.Directory directory = directoryInfo;
+                GUID = Guid.NewGuid();
+                System.Diagnostics.Debug.WriteLine("guid: " + GUID);
+
+                using (var myEqualityComparer = new Hashers.MD5s.Cloud(GUID.Value))
+                {
+                    var duplicateFiles = directory.DuplicateFiles(myEqualityComparer);
+                }
+            }
+            else
+            {
+                while (Reload(GUID.Value))
+                { }
+            }
         }
     }
 }
